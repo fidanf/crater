@@ -1,0 +1,58 @@
+---
+version: '3.8'
+networks:
+  # docker network create --attachable -d overlay --scope swarm traefik_public
+  traefik-public:
+    external: true
+  crater_net:
+    driver: bridge
+volumes:
+  crater_db:
+    driver: local
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: ${TARGET:-build}
+    ports:
+      - 8081:8081
+    container_name: app
+    restart: unless-stopped
+    working_dir: /app
+    depends_on:
+      - db
+    networks:
+      - crater_net
+      - traefik-public
+    env_file:
+      - .env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.crater.service=crater
+      - traefik.http.routers.crater.rule=Host(`crater.frank-fidanza.fr`)
+      - traefik.http.routers.crater.entrypoints=http
+      - traefik.http.routers.crater.entrypoints=https
+      - traefik.http.routers.crater.tls=true
+      - traefik.http.routers.crater.tls.options=tls-opts@file
+      - traefik.http.routers.crater.tls.certresolver=le
+      - traefik.http.routers.crater.middlewares=https-redirect
+      - traefik.http.services.crater.loadbalancer.server.port=8081
+      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+  db:
+    image: postgres:13.9-bullseye
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    expose:
+      - 5432
+    volumes:
+      - crater_db:/var/lib/postgresql/data
+    networks:
+      - crater_net

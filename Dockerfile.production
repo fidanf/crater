@@ -1,0 +1,22 @@
+FROM webdevops/php-nginx:8.1 as build
+
+# Override Nginx config
+RUN rm /etc/nginx/conf.d/10-docker.conf
+COPY ./docker-compose/production/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./docker-compose/production/nginx/conf.d /etc/nginx/conf.d
+
+FROM build as production
+
+COPY --chown=application:application ./ /app
+RUN chmod -R 775 /app
+USER application
+WORKDIR /app
+RUN composer install --no-interaction -o -a && \
+    php artisan key:generate -q && \
+    php artisan storage:link && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
+
+# TODO
+# COPY laravel queue supervisord program into
