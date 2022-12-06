@@ -8,7 +8,6 @@ COPY ./docker-compose/production/nginx/conf.d /etc/nginx/conf.d
 FROM build as production
 
 COPY --chown=application:application ./ /app
-RUN chmod -R 775 /app
 USER application
 WORKDIR /app
 RUN composer install --no-interaction -o -a && \
@@ -17,6 +16,7 @@ RUN composer install --no-interaction -o -a && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache
+RUN chmod -R 775 /app
 
 # TODO
 # COPY laravel queue supervisord program into
