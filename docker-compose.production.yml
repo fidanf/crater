@@ -14,12 +14,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-      target: ${TARGET:-build}
-    ports:
-      - 8081:8081
+      target: ${TARGET:-production}
     container_name: app
     restart: unless-stopped
     working_dir: /app
+    volumes:
+      - ./storage:/app/storage:rw,delegated
     depends_on:
       - db
     networks:
@@ -53,6 +53,6 @@ services:
     expose:
       - 5432
     volumes:
-      - crater_db:/var/lib/postgresql/data
+      - crater_db:/var/lib/postgresql/data:rw,delegated
     networks:
       - crater_net
