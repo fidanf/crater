@@ -1,48 +1,50 @@
 ---
 version: '3.8'
 networks:
-  # docker network create --attachable -d overlay --scope swarm traefik_public
-  traefik-public:
+  # docker network create --attachable -d overlay --scope swarm traefik-public
+  frontend:
     external: true
-  crater_net:
+    name: traefik-public
+  backend:
     driver: bridge
 volumes:
   crater_db:
     driver: local
 services:
-  app:
+  crater_app:
     build:
       context: .
       dockerfile: Dockerfile.production
       target: ${TARGET:-production}
-    container_name: app
+    container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     working_dir: /app
     volumes:
       - ./storage:/app/storage:rw,delegated
     depends_on:
-      - db
+      - crater_db
     networks:
-      - crater_net
-      - traefik-public
+      - frontend
+      - backend
     env_file:
       - .env
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-public
       - traefik.http.routers.crater.service=crater
-      - traefik.http.routers.crater.rule=Host(`crater.frank-fidanza.fr`)
+      - traefik.http.services.crater.loadbalancer.server.port=8081
+      - traefik.http.routers.crater.rule=Host(`${SESSION_DOMAIN}`)
       - traefik.http.routers.crater.entrypoints=http
       - traefik.http.routers.crater.entrypoints=https
       - traefik.http.routers.crater.tls=true
       - traefik.http.routers.crater.tls.options=tls-opts@file
       - traefik.http.routers.crater.tls.certresolver=le
       - traefik.http.routers.crater.middlewares=https-redirect
-      - traefik.http.services.crater.loadbalancer.server.port=8081
       - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-  db:
+  crater_db:
     image: postgres:13.9-bullseye
-    container_name: postgres
+    container_name: ${COMPOSE_PROJECT_NAME}_db
     restart: unless-stopped
     env_file:
       - .env
@@ -55,4 +57,4 @@ services:
     volumes:
       - crater_db:/var/lib/postgresql/data:rw,delegated
     networks:
-      - crater_net
+      - backend
