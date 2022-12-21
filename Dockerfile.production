@@ -1,5 +1,9 @@
 FROM webdevops/php-nginx:8.1 as build
 
+# Install apt dependencies
+RUN apt-get update && \
+    apt-get install -y curl mariadb zip unzip
+
 # Override Nginx config
 RUN rm /etc/nginx/conf.d/10-docker.conf
 COPY ./docker-compose/production/nginx/nginx.conf /etc/nginx/nginx.conf
