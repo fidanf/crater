@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:8.1 as build
 
 # Install apt dependencies
 RUN apt-get update && \
-    apt-get install -y curl mariadb zip unzip
+    apt-get install -y curl mariadb-client zip unzip dnsutils
 
 # Override Nginx config
 RUN rm /etc/nginx/conf.d/10-docker.conf
@@ -11,16 +11,4 @@ COPY ./docker-compose/production/nginx/conf.d /etc/nginx/conf.d
 
 FROM build as production
 
-COPY --chown=application:application ./ /app
-USER application
 WORKDIR /app
-RUN composer install --no-interaction -o -a && \
-    php artisan key:generate -q && \
-    php artisan storage:link && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
-RUN chmod -R 775 /app
-
-# TODO
-# COPY laravel queue supervisord program into
