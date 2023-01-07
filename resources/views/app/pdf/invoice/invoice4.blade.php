@@ -305,10 +305,31 @@
             padding-left: 0;
         }
 
-        footer { position: fixed; bottom: 0; left: 0px; right: 0px; height: 100px; }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
 
         .footer-wrapper {
-            padding: 0 30px;
+            padding: 6px;
+            color: #595959;
+
+        }
+
+        /* -- Notes -- */
+        .notes-top {
+            text-align: left;
+            padding: 2%;
+            line-break: auto;
+            font-size: 10px;
+        }
+
+        .notes-bottom {
+            text-align: left;
+            padding: 2%;
+            font-size: 12px;
+            line-break: auto;
         }
 
     </style>
@@ -383,15 +404,17 @@
 
 <footer>
     <div class="footer-wrapper">
-        <div class="notes">
-            @if ($notes)
-                <div class="notes-label">
-                    @lang('pdf_notes')
-                </div>
-
-                {!! $notes !!}
-            @endif
-        </div>
+        <p class="notes-top">
+            TVA non applicable, art. 293 B du CGI. </br>
+            Dispensé d'immatriculation en application de l'article L.123-1-1 du code de commerce. </br>
+            En cas de retard de paiement, une pénalité égale à 3 fois le taux d'intérêt légal sera exigible (Décret 2009-138 du 9 février 2009). </br>
+            Pour les professionnels, une indemnité minimum forfaitaire de 40 euros pour frais de recouvrement sera exigible (Décret 2012-1115 du 9 octobre 2012). </br>
+            Pas d’escompte pour règlement par anticipation.
+        </p>
+        <hr>
+        <p class="notes-bottom">
+            <b>Siren :</b> 848827457 <b>Siret :</b> 84882745700021 - <b>APE :</b> 6202A
+        </p>
     </div>
 </footer>
 
